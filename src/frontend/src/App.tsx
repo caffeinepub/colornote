@@ -70,6 +70,7 @@ import {
 import { type Lang, type T, useTranslation } from "./i18n";
 import type { SidebarView, SortMode, ViewMode } from "./types";
 import { colorHex, hashPin } from "./utils";
+import { getSecretParameter } from "./utils/urlParams";
 
 // ─── Login Screen ───────────────────────────────────────────────────────────
 function LoginScreen() {
@@ -122,7 +123,7 @@ function SkeletonCards() {
 // ─── Main App ────────────────────────────────────────────────────────────────
 export default function App() {
   const { identity, clear, isInitializing } = useInternetIdentity();
-  const { isFetching: actorLoading } = useActor();
+  const { actor, isFetching: actorLoading } = useActor();
 
   const notesQuery = useNotes();
   const trashQuery = useTrashedNotes();
@@ -179,7 +180,6 @@ export default function App() {
   }, [settings?.viewMode]);
 
   // ── Seed data on first load ────────────────────────────────────────────────
-  const { actor } = useActor();
   useEffect(() => {
     if (
       !actor ||
@@ -274,6 +274,14 @@ export default function App() {
   const pinnedNotes = visibleNotes.filter((n) => n.pinned);
   const unpinnedNotes = visibleNotes.filter((n) => !n.pinned);
 
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  /** Ensure the user is registered in the backend before any write operation. */
+  const ensureRegistered = useCallback(async () => {
+    if (!actor) throw new Error("Not authenticated");
+    const adminToken = getSecretParameter("caffeineAdminToken") ?? "";
+    await actor._initializeAccessControlWithSecret(adminToken);
+  }, [actor]);
+
   // ── Handlers ──────────────────────────────────────────────────────────────
   const openNote = useCallback((note: Note) => {
     if (note.locked) {
@@ -287,18 +295,29 @@ export default function App() {
 
   const handleSave = useCallback(
     async (data: NoteInput | NoteInput2, id?: string) => {
-      try {
+      const doSave = async () => {
         if (id) {
           await updateNote.mutateAsync({ id, input: data as NoteInput });
         } else {
           await createNote.mutateAsync(data as NoteInput2);
         }
+      };
+
+      try {
+        await doSave();
         toast.success("Note saved!");
       } catch {
-        toast.error("Failed to save note.");
+        // First attempt failed — re-register the user and try once more.
+        try {
+          await ensureRegistered();
+          await doSave();
+          toast.success("Note saved!");
+        } catch {
+          toast.error("Failed to save note.");
+        }
       }
     },
-    [createNote, updateNote],
+    [createNote, updateNote, ensureRegistered],
   );
 
   const handleDelete = useCallback((note: Note) => {
