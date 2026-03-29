@@ -32,6 +32,7 @@ import {
   Columns2,
   LayoutGrid,
   List,
+  LogOut,
   Menu,
   Plus,
   RotateCcw,
@@ -70,7 +71,6 @@ import {
 import { type Lang, type T, useTranslation } from "./i18n";
 import type { SidebarView, SortMode, ViewMode } from "./types";
 import { colorHex, hashPin } from "./utils";
-import { getSecretParameter } from "./utils/urlParams";
 
 // ─── Login Screen ───────────────────────────────────────────────────────────
 function LoginScreen() {
@@ -123,7 +123,7 @@ function SkeletonCards() {
 // ─── Main App ────────────────────────────────────────────────────────────────
 export default function App() {
   const { identity, clear, isInitializing } = useInternetIdentity();
-  const { actor, isFetching: actorLoading } = useActor();
+  const { isFetching: actorLoading } = useActor();
 
   const notesQuery = useNotes();
   const trashQuery = useTrashedNotes();
@@ -222,14 +222,6 @@ export default function App() {
   const pinnedNotes = visibleNotes.filter((n) => n.pinned);
   const unpinnedNotes = visibleNotes.filter((n) => !n.pinned);
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-  /** Ensure the user is registered in the backend before any write operation. */
-  const ensureRegistered = useCallback(async () => {
-    if (!actor) throw new Error("Not authenticated");
-    const adminToken = getSecretParameter("caffeineAdminToken") ?? "";
-    await actor._initializeAccessControlWithSecret(adminToken);
-  }, [actor]);
-
   // ── Handlers ──────────────────────────────────────────────────────────────
   const openNote = useCallback((note: Note) => {
     if (note.locked) {
@@ -243,29 +235,18 @@ export default function App() {
 
   const handleSave = useCallback(
     async (data: NoteInput | NoteInput2, id?: string) => {
-      const doSave = async () => {
+      try {
         if (id) {
           await updateNote.mutateAsync({ id, input: data as NoteInput });
         } else {
           await createNote.mutateAsync(data as NoteInput2);
         }
-      };
-
-      try {
-        await doSave();
         toast.success("Note saved!");
       } catch {
-        // First attempt failed — re-register the user and try once more.
-        try {
-          await ensureRegistered();
-          await doSave();
-          toast.success("Note saved!");
-        } catch {
-          toast.error("Failed to save note.");
-        }
+        toast.error("Failed to save note.");
       }
     },
-    [createNote, updateNote, ensureRegistered],
+    [createNote, updateNote],
   );
 
   const handleDelete = useCallback((note: Note) => {
@@ -346,7 +327,7 @@ export default function App() {
   if (!identity) return <LoginScreen />;
 
   const principal = identity.getPrincipal().toString();
-  const avatarLetter = principal.slice(0, 2).toUpperCase();
+  const _avatarLetter = principal.slice(0, 2).toUpperCase();
 
   const isLoading = notesQuery.isLoading || actorLoading;
   const trashNotes = trashQuery.data ?? [];
@@ -473,16 +454,17 @@ export default function App() {
             <span className="hidden sm:inline">{t.newNote}</span>
           </Button>
 
-          {/* Avatar */}
-          <Avatar
-            className="w-8 h-8 cursor-pointer"
+          {/* Logout */}
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={clear}
             title={t.logout}
+            className="w-8 h-8 text-muted-foreground hover:text-destructive"
+            data-ocid="topbar.logout.button"
           >
-            <AvatarFallback className="bg-primary text-white text-xs">
-              {avatarLetter}
-            </AvatarFallback>
-          </Avatar>
+            <LogOut size={18} />
+          </Button>
         </header>
 
         {/* Content */}

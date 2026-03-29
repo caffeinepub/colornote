@@ -6,9 +6,7 @@ import Map "mo:core/Map";
 import Runtime "mo:core/Runtime";
 import Time "mo:core/Time";
 import Array "mo:core/Array";
-import Option "mo:core/Option";
 import Order "mo:core/Order";
-import VarArray "mo:core/VarArray";
 import Principal "mo:core/Principal";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
@@ -109,6 +107,12 @@ actor {
   let userProfiles = Map.empty<Principal, UserProfile>();
   var nextId = 0;
 
+  func requireAuth(caller : Principal) {
+    if (caller.isAnonymous()) {
+      Runtime.trap("Not authenticated");
+    };
+  };
+
   func getNextId() : Text {
     let id = nextId;
     nextId += 1;
@@ -116,33 +120,22 @@ actor {
   };
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can access profiles");
-    };
+    requireAuth(caller);
     userProfiles.get(caller);
   };
 
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can access profiles");
-    };
-    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Can only view your own profile");
-    };
+    requireAuth(caller);
     userProfiles.get(user);
   };
 
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can save profiles");
-    };
+    requireAuth(caller);
     userProfiles.add(caller, profile);
   };
 
   public query ({ caller }) func getNotes() : async [Note] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can access notes");
-    };
+    requireAuth(caller);
     let userNotes = notes.get(caller);
     switch (userNotes) {
       case (null) { [] };
@@ -153,9 +146,7 @@ actor {
   };
 
   public query ({ caller }) func getTrashedNotes() : async [Note] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can access notes");
-    };
+    requireAuth(caller);
     let userNotes = notes.get(caller);
     switch (userNotes) {
       case (null) { [] };
@@ -166,9 +157,7 @@ actor {
   };
 
   public query ({ caller }) func getNoteById(id : Text) : async Note {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can access notes");
-    };
+    requireAuth(caller);
     switch (notes.get(caller)) {
       case (null) { Runtime.trap("Note not found") };
       case (?userNotes) {
@@ -181,9 +170,7 @@ actor {
   };
 
   public shared ({ caller }) func createNote(input : NoteInput.Input) : async Note {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can create notes");
-    };
+    requireAuth(caller);
     let id = getNextId();
     let now = Time.now();
     let note : Note = {
@@ -215,9 +202,7 @@ actor {
   };
 
   public shared ({ caller }) func updateNote(id : Text, input : NoteUpdateInput.Input) : async Note {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can update notes");
-    };
+    requireAuth(caller);
     switch (notes.get(caller)) {
       case (null) { Runtime.trap("Note not found") };
       case (?userNotes) {
@@ -247,9 +232,7 @@ actor {
   };
 
   public shared ({ caller }) func deleteNote(id : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can delete notes");
-    };
+    requireAuth(caller);
     switch (notes.get(caller)) {
       case (null) { Runtime.trap("Note not found") };
       case (?userNotes) {
@@ -270,9 +253,7 @@ actor {
   };
 
   public shared ({ caller }) func restoreNote(id : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can restore notes");
-    };
+    requireAuth(caller);
     switch (notes.get(caller)) {
       case (null) { Runtime.trap("Note not found") };
       case (?userNotes) {
@@ -293,9 +274,7 @@ actor {
   };
 
   public shared ({ caller }) func permanentlyDeleteNote(id : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can permanently delete notes");
-    };
+    requireAuth(caller);
     switch (notes.get(caller)) {
       case (null) { Runtime.trap("Note not found") };
       case (?userNotes) {
@@ -310,9 +289,7 @@ actor {
   };
 
   public shared ({ caller }) func duplicateNote(id : Text) : async Note {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can duplicate notes");
-    };
+    requireAuth(caller);
     switch (notes.get(caller)) {
       case (null) { Runtime.trap("Note not found") };
       case (?userNotes) {
@@ -340,9 +317,7 @@ actor {
   };
 
   public shared ({ caller }) func pinNote(id : Text, pinned : Bool) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can pin notes");
-    };
+    requireAuth(caller);
     switch (notes.get(caller)) {
       case (null) { Runtime.trap("Note not found") };
       case (?userNotes) {
@@ -363,9 +338,7 @@ actor {
   };
 
   public shared ({ caller }) func changeColor(id : Text, color : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can change note colors");
-    };
+    requireAuth(caller);
     switch (notes.get(caller)) {
       case (null) { Runtime.trap("Note not found") };
       case (?userNotes) {
@@ -386,9 +359,7 @@ actor {
   };
 
   public shared ({ caller }) func getSettings() : async UserSettings {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can access settings");
-    };
+    requireAuth(caller);
     switch (userSettings.get(caller)) {
       case (null) {
         {
@@ -403,9 +374,7 @@ actor {
   };
 
   public shared ({ caller }) func saveSettings(input : UserSettingsInput.Input) : async UserSettings {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can save settings");
-    };
+    requireAuth(caller);
     let settings : UserSettings = {
       theme = input.theme;
       defaultColor = input.defaultColor;

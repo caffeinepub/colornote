@@ -192,14 +192,6 @@ export default function NoteEditor({
               className="flex-1 border-none shadow-none bg-transparent text-[#111827] placeholder:text-[#111827]/50 text-lg font-semibold focus-visible:ring-0 px-0"
               data-ocid="note_editor.title.input"
             />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="shrink-0 text-[#111827]/60"
-            >
-              <X size={18} />
-            </Button>
           </div>
 
           <div
