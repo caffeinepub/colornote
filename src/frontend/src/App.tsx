@@ -179,58 +179,6 @@ export default function App() {
     if (settings?.viewMode) setViewMode(settings.viewMode as ViewMode);
   }, [settings?.viewMode]);
 
-  // ── Seed data on first load ────────────────────────────────────────────────
-  useEffect(() => {
-    if (
-      !actor ||
-      notesQuery.isLoading ||
-      (notesQuery.data && notesQuery.data.length > 0)
-    )
-      return;
-    const seed = async () => {
-      try {
-        await Promise.all([
-          actor.createNote({
-            title: "Welcome to ColorNote!",
-            body: "Your notes are stored securely on the Internet Computer. Tap + to create a new note!",
-            color: "yellow",
-            tags: [],
-            locked: false,
-            noteType: NoteType.text,
-            checklistItems: [],
-          }),
-          actor.createNote({
-            title: "Shopping List",
-            body: "",
-            color: "blue",
-            tags: ["home"],
-            locked: false,
-            noteType: NoteType.checklist,
-            checklistItems: [
-              { id: "1", text: "Milk", checked: false, order: BigInt(0) },
-              { id: "2", text: "Eggs", checked: false, order: BigInt(1) },
-              { id: "3", text: "Bread", checked: true, order: BigInt(2) },
-            ],
-          }),
-          actor.createNote({
-            title: "Important Reminder",
-            body: "Don't forget to call the doctor at 3pm.",
-            color: "red",
-            tags: ["health"],
-            locked: false,
-            noteType: NoteType.text,
-            checklistItems: [],
-          }),
-        ]);
-        notesQuery.refetch();
-      } catch {
-        // ignore seed errors
-      }
-    };
-    seed();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [actor, notesQuery.isLoading, notesQuery.data, notesQuery.refetch]);
-
   // ── Derived data ──────────────────────────────────────────────────────────
   const allNotes = notesQuery.data ?? [];
   const allTags = useMemo(() => {
