@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/assets/fonts/PlusJakartaSans.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    --radius: 0.875rem;
+    --background: 1 0 0;
+    --foreground: 0.145 0.013 254;
+    --card: 1 0 0;
+    --card-foreground: 0.145 0.013 254;
+    --popover: 1 0 0;
+    --popover-foreground: 0.145 0.013 254;
+    --primary: 0.546 0.244 264;
+    --primary-foreground: 1 0 0;
+    --secondary: 0.965 0.003 247;
+    --secondary-foreground: 0.145 0.013 254;
+    --muted: 0.965 0.003 247;
+    --muted-foreground: 0.52 0.02 254;
+    --accent: 0.91 0.065 245;
+    --accent-foreground: 0.546 0.244 264;
+    --destructive: 0.577 0.245 27.325;
+    --destructive-foreground: 1 0 0;
+    --border: 0.922 0.003 247;
+    --input: 0.922 0.003 247;
+    --ring: 0.546 0.244 264;
+    --chart-1: 0.646 0.222 41.116;
+    --chart-2: 0.6 0.118 184.704;
+    --chart-3: 0.398 0.07 227.392;
+    --chart-4: 0.828 0.189 84.429;
+    --chart-5: 0.769 0.188 70.08;
+    --sidebar: 0.965 0.003 247;
+    --sidebar-foreground: 0.145 0.013 254;
+    --sidebar-primary: 0.546 0.244 264;
+    --sidebar-primary-foreground: 1 0 0;
+    --sidebar-accent: 0.91 0.065 245;
+    --sidebar-accent-foreground: 0.546 0.244 264;
+    --sidebar-border: 0.91 0.003 247;
+    --sidebar-ring: 0.546 0.244 264;
+  }
+
+  .dark {
+    --background: 0.13 0.028 265;
+    --foreground: 0.96 0.005 247;
+    --card: 0.18 0.025 265;
+    --card-foreground: 0.96 0.005 247;
+    --popover: 0.2 0.025 265;
+    --popover-foreground: 0.96 0.005 247;
+    --primary: 0.6 0.22 264;
+    --primary-foreground: 1 0 0;
+    --secondary: 0.22 0.025 265;
+    --secondary-foreground: 0.96 0.005 247;
+    --muted: 0.22 0.025 265;
+    --muted-foreground: 0.65 0.01 247;
+    --accent: 0.27 0.04 265;
+    --accent-foreground: 0.8 0.15 264;
+    --destructive: 0.62 0.22 27;
+    --destructive-foreground: 1 0 0;
+    --border: 1 0 0 / 10%;
+    --input: 1 0 0 / 15%;
+    --ring: 0.6 0.22 264;
+    --chart-1: 0.488 0.243 264.376;
+    --chart-2: 0.696 0.17 162.48;
+    --chart-3: 0.769 0.188 70.08;
+    --chart-4: 0.627 0.265 303.9;
+    --chart-5: 0.645 0.246 16.439;
+    --sidebar: 0.16 0.026 265;
+    --sidebar-foreground: 0.96 0.005 247;
+    --sidebar-primary: 0.6 0.22 264;
+    --sidebar-primary-foreground: 1 0 0;
+    --sidebar-accent: 0.27 0.04 265;
+    --sidebar-accent-foreground: 0.8 0.15 264;
+    --sidebar-border: 1 0 0 / 10%;
+    --sidebar-ring: 0.6 0.22 264;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Plus Jakarta Sans", Inter, Roboto, system-ui, sans-serif;
+  }
+}
+
+/* Note card color ring */
+.note-card-shadow {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.07);
+}
+.note-card-shadow:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Board/sticky view */
+.board-view {
+  background: #f5f0e8;
+  min-height: 100%;
+  padding: 2rem;
+}
+.dark .board-view {
+  background: #1a1630;
+}
+
+/* Checklist strikethrough */
+.checklist-checked {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(var(--border));
+  border-radius: 999px;
+}
