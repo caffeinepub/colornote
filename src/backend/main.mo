@@ -8,8 +8,10 @@ import Time "mo:core/Time";
 import Array "mo:core/Array";
 import Order "mo:core/Order";
 import Principal "mo:core/Principal";
+
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+
 
 actor {
   type NoteType = { #text; #checklist };
@@ -102,9 +104,9 @@ actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  let notes = Map.empty<Principal, Map.Map<Text, Note>>();
-  let userSettings = Map.empty<Principal, UserSettings>();
-  let userProfiles = Map.empty<Principal, UserProfile>();
+  var notes = Map.empty<Principal, Map.Map<Text, Note>>();
+  var userSettings = Map.empty<Principal, UserSettings>();
+  var userProfiles = Map.empty<Principal, UserProfile>();
   var nextId = 0;
 
   func requireAuth(caller : Principal) {

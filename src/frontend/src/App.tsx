@@ -580,7 +580,7 @@ export default function App() {
                 />
               ) : (
                 <>
-                  {/* Pinned section */}
+                  {/* Pinned section — only shown in "all" view */}
                   {pinnedNotes.length > 0 && sidebarView === "all" && (
                     <div className="mb-6">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -610,10 +610,10 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Others section */}
-                  {unpinnedNotes.length > 0 && (
+                  {/* Others section — only shown in "all" view when there are also pinned notes */}
+                  {unpinnedNotes.length > 0 && sidebarView === "all" && (
                     <div>
-                      {pinnedNotes.length > 0 && sidebarView === "all" && (
+                      {pinnedNotes.length > 0 && (
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                           {t.othersSection}
                         </p>
@@ -639,6 +639,31 @@ export default function App() {
                           ))}
                         </AnimatePresence>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Non-"all" views (pinned, reminders, tag): flat list of all visible notes */}
+                  {sidebarView !== "all" && (
+                    <div className={gridClass}>
+                      <AnimatePresence>
+                        {visibleNotes.map((note, i) => (
+                          <NoteCard
+                            key={note.id}
+                            note={note}
+                            view={viewMode}
+                            t={t}
+                            index={i}
+                            onOpen={openNote}
+                            onPin={handlePin}
+                            onDelete={handleDelete}
+                            onDuplicate={handleDuplicate}
+                            onColorChange={(n) => {
+                              setColorNote(n);
+                              setColorDialogOpen(true);
+                            }}
+                          />
+                        ))}
+                      </AnimatePresence>
                     </div>
                   )}
                 </>
