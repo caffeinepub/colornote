@@ -149,6 +149,15 @@ export interface Note {
     pinHash?: string;
     trashedAt?: bigint;
 }
+export interface Label {
+    id: string;
+    name: string;
+    color: string;
+}
+export interface LabelInput {
+    name: string;
+    color: string;
+}
 export enum NoteType {
     text = "text",
     checklist = "checklist"
@@ -179,6 +188,10 @@ export interface backendInterface {
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     saveSettings(input: Input__1): Promise<UserSettings>;
     updateNote(id: string, input: Input): Promise<Note>;
+    getLabels(): Promise<Array<Label>>;
+    createLabel(input: LabelInput): Promise<Label>;
+    updateLabel(id: string, input: LabelInput): Promise<Label>;
+    deleteLabel(id: string): Promise<void>;
 }
 import type { ChecklistItem as _ChecklistItem, Input as _Input, Input__2 as _Input__2, Note as _Note, NoteType as _NoteType, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -461,6 +474,62 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.updateNote(arg0, to_candid_Input_n17(this._uploadFile, this._downloadFile, arg1));
             return from_candid_Note_n7(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getLabels(): Promise<Array<Label>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getLabels();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getLabels();
+            return result;
+        }
+    }
+    async createLabel(arg0: LabelInput): Promise<Label> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createLabel(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createLabel(arg0);
+            return result;
+        }
+    }
+    async updateLabel(arg0: string, arg1: LabelInput): Promise<Label> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateLabel(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateLabel(arg0, arg1);
+            return result;
+        }
+    }
+    async deleteLabel(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteLabel(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteLabel(arg0);
+            return result;
         }
     }
 }

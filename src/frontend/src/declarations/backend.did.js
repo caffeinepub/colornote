@@ -51,6 +51,15 @@ export const Note = IDL.Record({
   'pinHash' : IDL.Opt(IDL.Text),
   'trashedAt' : IDL.Opt(IDL.Int),
 });
+export const Label = IDL.Record({
+  'id' : IDL.Text,
+  'name' : IDL.Text,
+  'color' : IDL.Text,
+});
+export const LabelInput = IDL.Record({
+  'name' : IDL.Text,
+  'color' : IDL.Text,
+});
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 export const UserSettings = IDL.Record({
   'theme' : IDL.Text,
@@ -80,11 +89,14 @@ export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'changeColor' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'createLabel' : IDL.Func([LabelInput], [Label], []),
   'createNote' : IDL.Func([Input__2], [Note], []),
+  'deleteLabel' : IDL.Func([IDL.Text], [], []),
   'deleteNote' : IDL.Func([IDL.Text], [], []),
   'duplicateNote' : IDL.Func([IDL.Text], [Note], []),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getLabels' : IDL.Func([], [IDL.Vec(Label)], ['query']),
   'getNoteById' : IDL.Func([IDL.Text], [Note], ['query']),
   'getNotes' : IDL.Func([], [IDL.Vec(Note)], ['query']),
   'getSettings' : IDL.Func([], [UserSettings], []),
@@ -100,6 +112,7 @@ export const idlService = IDL.Service({
   'restoreNote' : IDL.Func([IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'saveSettings' : IDL.Func([Input__1], [UserSettings], []),
+  'updateLabel' : IDL.Func([IDL.Text, LabelInput], [Label], []),
   'updateNote' : IDL.Func([IDL.Text, Input], [Note], []),
 });
 
@@ -146,6 +159,15 @@ export const idlFactory = ({ IDL }) => {
     'pinHash' : IDL.Opt(IDL.Text),
     'trashedAt' : IDL.Opt(IDL.Int),
   });
+  const Label = IDL.Record({
+    'id' : IDL.Text,
+    'name' : IDL.Text,
+    'color' : IDL.Text,
+  });
+  const LabelInput = IDL.Record({
+    'name' : IDL.Text,
+    'color' : IDL.Text,
+  });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
   const UserSettings = IDL.Record({
     'theme' : IDL.Text,
@@ -175,11 +197,14 @@ export const idlFactory = ({ IDL }) => {
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'changeColor' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'createLabel' : IDL.Func([LabelInput], [Label], []),
     'createNote' : IDL.Func([Input__2], [Note], []),
+    'deleteLabel' : IDL.Func([IDL.Text], [], []),
     'deleteNote' : IDL.Func([IDL.Text], [], []),
     'duplicateNote' : IDL.Func([IDL.Text], [Note], []),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getLabels' : IDL.Func([], [IDL.Vec(Label)], ['query']),
     'getNoteById' : IDL.Func([IDL.Text], [Note], ['query']),
     'getNotes' : IDL.Func([], [IDL.Vec(Note)], ['query']),
     'getSettings' : IDL.Func([], [UserSettings], []),
@@ -195,6 +220,7 @@ export const idlFactory = ({ IDL }) => {
     'restoreNote' : IDL.Func([IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'saveSettings' : IDL.Func([Input__1], [UserSettings], []),
+    'updateLabel' : IDL.Func([IDL.Text, LabelInput], [Label], []),
     'updateNote' : IDL.Func([IDL.Text, Input], [Note], []),
   });
 };

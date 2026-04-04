@@ -8,7 +8,8 @@ export type SidebarView =
   | "reminders"
   | "trash"
   | "settings"
-  | "tag";
+  | "tag"
+  | "label";
 export type SortMode = "updated" | "created" | "title" | "color";
 
 export interface AppState {

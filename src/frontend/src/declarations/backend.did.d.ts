@@ -44,6 +44,15 @@ export interface Input__2 {
   'checklistItems' : Array<ChecklistItem>,
   'pinHash' : [] | [string],
 }
+export interface Label {
+  'id' : string,
+  'name' : string,
+  'color' : string,
+}
+export interface LabelInput {
+  'name' : string,
+  'color' : string,
+}
 export interface Note {
   'id' : string,
   'title' : string,
@@ -77,11 +86,14 @@ export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'changeColor' : ActorMethod<[string, string], undefined>,
+  'createLabel' : ActorMethod<[LabelInput], Label>,
   'createNote' : ActorMethod<[Input__2], Note>,
+  'deleteLabel' : ActorMethod<[string], undefined>,
   'deleteNote' : ActorMethod<[string], undefined>,
   'duplicateNote' : ActorMethod<[string], Note>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getLabels' : ActorMethod<[], Array<Label>>,
   'getNoteById' : ActorMethod<[string], Note>,
   'getNotes' : ActorMethod<[], Array<Note>>,
   'getSettings' : ActorMethod<[], UserSettings>,
@@ -93,6 +105,7 @@ export interface _SERVICE {
   'restoreNote' : ActorMethod<[string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'saveSettings' : ActorMethod<[Input__1], UserSettings>,
+  'updateLabel' : ActorMethod<[string, LabelInput], Label>,
   'updateNote' : ActorMethod<[string, Input], Note>,
 }
 export declare const idlService: IDL.ServiceClass;

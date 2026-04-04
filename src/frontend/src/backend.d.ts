@@ -67,6 +67,15 @@ export interface Note {
     pinHash?: string;
     trashedAt?: bigint;
 }
+export interface Label {
+    id: string;
+    name: string;
+    color: string;
+}
+export interface LabelInput {
+    name: string;
+    color: string;
+}
 export enum NoteType {
     text = "text",
     checklist = "checklist"
@@ -96,4 +105,8 @@ export interface backendInterface {
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     saveSettings(input: Input__1): Promise<UserSettings>;
     updateNote(id: string, input: Input): Promise<Note>;
+    getLabels(): Promise<Array<Label>>;
+    createLabel(input: LabelInput): Promise<Label>;
+    updateLabel(id: string, input: LabelInput): Promise<Label>;
+    deleteLabel(id: string): Promise<void>;
 }

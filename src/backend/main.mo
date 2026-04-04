@@ -52,6 +52,12 @@ actor {
     name : Text;
   };
 
+  type NoteLabel = {
+    id : Text;
+    name : Text;
+    color : Text;
+  };
+
   module Note {
     public func compare(a : Note, b : Note) : Order.Order {
       Text.compare(a.id, b.id);
@@ -101,13 +107,21 @@ actor {
     };
   };
 
+  module NoteLabelInput {
+    public type Input = {
+      name : Text;
+      color : Text;
+    };
+  };
+
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  var notes = Map.empty<Principal, Map.Map<Text, Note>>();
-  var userSettings = Map.empty<Principal, UserSettings>();
-  var userProfiles = Map.empty<Principal, UserProfile>();
-  var nextId = 0;
+  stable var notes = Map.empty<Principal, Map.Map<Text, Note>>();
+  stable var userSettings = Map.empty<Principal, UserSettings>();
+  stable var userProfiles = Map.empty<Principal, UserProfile>();
+  stable var userLabels = Map.empty<Principal, Map.Map<Text, NoteLabel>>();
+  stable var nextId = 0;
 
   func requireAuth(caller : Principal) {
     if (caller.isAnonymous()) {
@@ -385,5 +399,69 @@ actor {
     };
     userSettings.add(caller, settings);
     settings;
+  };
+
+  // ── Labels ────────────────────────────────────────────────────────────────
+
+  public query ({ caller }) func getLabels() : async [NoteLabel] {
+    requireAuth(caller);
+    switch (userLabels.get(caller)) {
+      case (null) { [] };
+      case (?labelsMap) { labelsMap.values().toArray() };
+    };
+  };
+
+  public shared ({ caller }) func createLabel(input : NoteLabelInput.Input) : async NoteLabel {
+    requireAuth(caller);
+    let id = getNextId();
+    let newEntry : NoteLabel = {
+      id;
+      name = input.name;
+      color = input.color;
+    };
+    let labelsMap = switch (userLabels.get(caller)) {
+      case (null) { Map.empty<Text, NoteLabel>() };
+      case (?m) { m };
+    };
+    labelsMap.add(id, newEntry);
+    userLabels.add(caller, labelsMap);
+    newEntry;
+  };
+
+  public shared ({ caller }) func updateLabel(id : Text, input : NoteLabelInput.Input) : async NoteLabel {
+    requireAuth(caller);
+    switch (userLabels.get(caller)) {
+      case (null) { Runtime.trap("Label not found") };
+      case (?labelsMap) {
+        switch (labelsMap.get(id)) {
+          case (null) { Runtime.trap("Label not found") };
+          case (?existing) {
+            let updatedEntry : NoteLabel = {
+              existing with
+              name = input.name;
+              color = input.color;
+            };
+            labelsMap.add(id, updatedEntry);
+            userLabels.add(caller, labelsMap);
+            updatedEntry;
+          };
+        };
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteLabel(id : Text) : async () {
+    requireAuth(caller);
+    switch (userLabels.get(caller)) {
+      case (null) { Runtime.trap("Label not found") };
+      case (?labelsMap) {
+        if (labelsMap.containsKey(id)) {
+          labelsMap.remove(id);
+          userLabels.add(caller, labelsMap);
+        } else {
+          Runtime.trap("Label not found");
+        };
+      };
+    };
   };
 };

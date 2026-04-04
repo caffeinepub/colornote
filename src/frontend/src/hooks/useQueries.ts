@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Note, UserSettings } from "../backend.d";
+import type { Label, LabelInput, Note, UserSettings } from "../backend.d";
 import { NoteType } from "../backend.d";
 import type { Input, Input__1, Input__2 } from "../backend.d";
 import { useActor } from "./useActor";
@@ -41,6 +41,18 @@ export function useSettings() {
           defaultColor: "yellow",
         };
       return actor.getSettings();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useLabels() {
+  const { actor, isFetching } = useActor();
+  return useQuery<Label[]>({
+    queryKey: ["labels"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getLabels();
     },
     enabled: !!actor && !isFetching,
   });
@@ -157,6 +169,42 @@ export function useSaveSettings() {
       return actor.saveSettings(input);
     },
     onSuccess: (data) => qc.setQueryData(["settings"], data),
+  });
+}
+
+export function useCreateLabel() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: LabelInput) => {
+      if (!actor) throw new Error("No actor");
+      return actor.createLabel(input);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["labels"] }),
+  });
+}
+
+export function useUpdateLabel() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: LabelInput }) => {
+      if (!actor) throw new Error("No actor");
+      return actor.updateLabel(id, input);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["labels"] }),
+  });
+}
+
+export function useDeleteLabel() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => {
+      if (!actor) throw new Error("No actor");
+      return actor.deleteLabel(id);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["labels"] }),
   });
 }
 

@@ -43,7 +43,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import type { Note } from "./backend.d";
+import type { Label, Note } from "./backend.d";
 import type { Input as NoteInput, Input__2 as NoteInput2 } from "./backend.d";
 import ColorPicker from "./components/ColorPicker";
 import NoteCard from "./components/NoteCard";
@@ -56,9 +56,12 @@ import { useInternetIdentity } from "./hooks/useInternetIdentity";
 import {
   NoteType,
   useChangeColor,
+  useCreateLabel,
   useCreateNote,
+  useDeleteLabel,
   useDeleteNote,
   useDuplicateNote,
+  useLabels,
   useNotes,
   usePermanentlyDeleteNote,
   usePinNote,
@@ -66,6 +69,7 @@ import {
   useSaveSettings,
   useSettings,
   useTrashedNotes,
+  useUpdateLabel,
   useUpdateNote,
 } from "./hooks/useQueries";
 import { type Lang, type T, useTranslation } from "./i18n";
@@ -138,11 +142,16 @@ export default function App() {
   const pinNote = usePinNote();
   const changeColor = useChangeColor();
   const saveSettings = useSaveSettings();
+  const labelsQuery = useLabels();
+  const createLabel = useCreateLabel();
+  const updateLabel = useUpdateLabel();
+  const deleteLabel = useDeleteLabel();
 
   // ── UI State ──────────────────────────────────────────────────────────────
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarView, setSidebarView] = useState<SidebarView>("all");
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [activeLabel, setActiveLabel] = useState<Label | null>(null);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortMode>("updated");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -194,6 +203,8 @@ export default function App() {
       notes = notes.filter((n) => !!n.reminder);
     else if (sidebarView === "tag" && activeTag)
       notes = notes.filter((n) => n.tags.includes(activeTag));
+    else if (sidebarView === "label" && activeLabel)
+      notes = notes.filter((n) => n.tags.includes(activeLabel.name));
 
     if (search) {
       const q = search.toLowerCase();
@@ -217,7 +228,7 @@ export default function App() {
       sorted.sort((a, b) => a.color.localeCompare(b.color));
 
     return sorted;
-  }, [allNotes, sidebarView, activeTag, search, sort]);
+  }, [allNotes, sidebarView, activeTag, activeLabel, search, sort]);
 
   const pinnedNotes = visibleNotes.filter((n) => n.pinned);
   const unpinnedNotes = visibleNotes.filter((n) => !n.pinned);
@@ -353,6 +364,22 @@ export default function App() {
           setActiveTag(tag ?? null);
         }}
         onClose={() => setSidebarOpen(false)}
+        labels={labelsQuery.data ?? []}
+        activeLabel={activeLabel}
+        onCreateLabel={async (input) => {
+          await createLabel.mutateAsync(input);
+        }}
+        onUpdateLabel={async (id, input) => {
+          await updateLabel.mutateAsync({ id, input });
+        }}
+        onDeleteLabel={async (id) => {
+          await deleteLabel.mutateAsync(id);
+        }}
+        onNavigateLabel={(label) => {
+          setSidebarView("label");
+          setActiveLabel(label);
+          setSidebarOpen(false);
+        }}
       />
 
       {/* Main */}
@@ -552,7 +579,9 @@ export default function App() {
                       ? t.reminders
                       : sidebarView === "tag" && activeTag
                         ? `#${activeTag}`
-                        : t.allNotes}
+                        : sidebarView === "label" && activeLabel
+                          ? activeLabel.name
+                          : t.allNotes}
                 </h2>
               </div>
 
